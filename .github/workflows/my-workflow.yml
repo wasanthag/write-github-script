@@ -7,18 +7,24 @@ on:
 jobs:
   comment:
     runs-on: ubuntu-latest
-    steps: 
-      - name: Comment on new issue 
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Comment on new issue
         uses: actions/github-script@0.8.0
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "🎉 You've created this issue comment using GitHub Script!!!"
-            })
+             const fs = require('fs')
+             const issueBody = fs.readFileSync(".github/ISSUE_RESPONSES/comment.md", "utf8")
+             github.issues.createComment({
+             issue_number: context.issue.number,
+             owner: context.repo.owner,
+             repo: context.repo.repo,
+             body: issueBody
+             })
+
       - name: Add issue to project board
         if: contains(github.event.issue.labels.*.name, 'bug')
         uses: actions/github-script@0.8.0
@@ -29,4 +35,4 @@ jobs:
             column_id: 12891998,
             content_id: context.payload.issue.id,
             content_type: "Issue"
-            });     
+            });
